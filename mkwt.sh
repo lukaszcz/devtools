@@ -3,11 +3,11 @@
 set -euo pipefail
 
 CREATE_BRANCH=false
-PARENT_DIR="../"
+WORKTREES_DIR=".worktrees/"
 while getopts "b:d:" opt; do
     case $opt in
         b) CREATE_BRANCH=true; BRANCH="$OPTARG" ;;
-        d) PARENT_DIR="$OPTARG/" ;;
+        d) WORKTREES_DIR="$OPTARG/" ;;
         *) echo "usage: $0 [-b branch-name] [-d dir] [branch-name]"; exit 1 ;;
     esac
 done
@@ -27,7 +27,7 @@ else
 fi
 
 BASEDIR=$(basename "$(git worktree list --porcelain | sed -n 's/^worktree //p' | head -1)")
-DIRNAME="$PARENT_DIR$BASEDIR-$BRANCH"
+DIRNAME="$WORKTREES_DIR$BASEDIR-$BRANCH"
 
 if $CREATE_BRANCH; then
     git worktree add -b "$BRANCH" "$DIRNAME"
@@ -36,7 +36,7 @@ else
 fi
 cp -r .setup.sh .config .opencode .codex .claude .mcp.json $DIRNAME 2>/dev/null || true
 
-if [ -f ./config/setup.sh ] && [ -x .config/setup.sh ]; then
+if [ -f .config/setup.sh ] && [ -x .config/setup.sh ]; then
     (cd $DIRNAME && ./.config/setup.sh)
 fi
 
