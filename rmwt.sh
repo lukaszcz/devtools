@@ -41,5 +41,3 @@ fi
 echo "Removed worktree for branch '$BRANCH': $WORKTREE_PATH"
 
 git branch -d "$BRANCH"
-
-echo "Removed branch '$BRANCH'"
