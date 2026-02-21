@@ -2,37 +2,40 @@
 
 set -euo pipefail
 
-WORKTREES_DIR=".worktrees/"
 FORCE=false
 
-while getopts "d:f" opt; do
+while getopts "f" opt; do
     case $opt in
-        d) WORKTREES_DIR="$OPTARG/" ;;
         f) FORCE=true ;;
-        *) echo "usage: $0 [-d dir] [-f] <branch-name>"; exit 1 ;;
+        *) echo "usage: $0 [-f] <branch-name>"; exit 1 ;;
     esac
 done
 shift $((OPTIND - 1))
 
 if [ $# -ne 1 ]; then
-    echo "usage: $0 [-d dir] [-f] <branch-name>"
+    echo "usage: $0 [-f] <branch-name>"
     exit 1
 fi
 
 BRANCH="$1"
 
-BASEDIR=$(basename "$(git worktree list --porcelain | sed -n 's/^worktree //p' | head -1)")
-DIRNAME="$WORKTREES_DIR$BASEDIR-$BRANCH"
+# Find the worktree path for the given branch using git worktree list
+WORKTREE_PATH=$(git worktree list --porcelain | awk -v branch="$BRANCH" '
+    /^worktree / { path = substr($0, 10) }
+    /^branch / && $2 == "refs/heads/" branch { print path; exit }
+')
 
-if [ ! -d "$DIRNAME" ]; then
-    echo "Error: Worktree directory '$DIRNAME' does not exist"
+if [ -z "$WORKTREE_PATH" ]; then
+    echo "Error: No worktree found for branch '$BRANCH'"
+    echo "Available worktrees:"
+    git worktree list
     exit 1
 fi
 
 if $FORCE; then
-    git worktree remove --force "$DIRNAME"
+    git worktree remove --force "$WORKTREE_PATH"
 else
-    git worktree remove "$DIRNAME"
+    git worktree remove "$WORKTREE_PATH"
 fi
 
-echo "Removed worktree: $DIRNAME"
+echo "Removed worktree for branch '$BRANCH': $WORKTREE_PATH"
