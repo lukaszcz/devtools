@@ -36,10 +36,12 @@ else
 fi
 cp -r .setup.sh .env .env.local .config .opencode .codex .claude .mcp.json $DIRNAME 2>/dev/null || true
 
+cd $DIRNAME
+
 if [ -f .config/setup.sh ] && [ -x .config/setup.sh ]; then
-    (cd $DIRNAME && ./.config/setup.sh)
+    ./.config/setup.sh
 fi
 
 if [ -f .setup.sh ] && [ -x .setup.sh ]; then
-    (cd $DIRNAME && ./.setup.sh)
+    ./.setup.sh
 fi
