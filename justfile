@@ -7,7 +7,7 @@ install prefix=default_prefix symlink="false":
     @bin_dir="{{prefix}}/bin"; \
     mkdir -p "$bin_dir"; \
     for script in {{scripts}}; do \
-      src="$(pwd)/$script"; \
+      src="{{justfile_directory()}}/scripts/$script"; \
       dst="$bin_dir/$script"; \
       if [ "{{symlink}}" = "1" ] || [ "{{symlink}}" = "true" ] || [ "{{symlink}}" = "yes" ]; then \
         ln -sfn "$src" "$dst"; \
