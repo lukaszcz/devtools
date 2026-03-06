@@ -34,7 +34,7 @@ if $CREATE_BRANCH; then
 else
     git worktree add "$DIRNAME" "$BRANCH"
 fi
-cp -r .setup.sh .env .env.local .config .opencode .codex .claude .mcp.json $DIRNAME 2>/dev/null || true
+cp -r .setup.sh .env .env.local .config .agents .opencode .codex .claude .mcp.json $DIRNAME 2>/dev/null || true
 
 cd $DIRNAME
 
