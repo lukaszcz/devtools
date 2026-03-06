@@ -29,6 +29,12 @@ Install as symlinks instead of copying files:
 just install "$HOME/.local" true
 ```
 
+Top-level overrides (named style):
+
+```bash
+just prefix="$HOME/.local" symlink=true install
+```
+
 ## Scripts
 
 ### `mkwt.sh`
