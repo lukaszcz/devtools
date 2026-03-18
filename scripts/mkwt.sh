@@ -2,6 +2,17 @@
 
 set -euo pipefail
 
+git_setup() {
+    if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        GIT=(git)
+    elif [ -d repo ] && git -C repo rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        GIT=(git -C repo)
+    else
+        echo "Error: current directory is not a git repository and repo/ is not a git repository." >&2
+        exit 1
+    fi
+}
+
 default_worktrees_dir() {
     local current_dir parent_dir grandparent_dir
 
@@ -44,13 +55,20 @@ else
     BRANCH="$1"
 fi
 
-BASEDIR=$(basename "$(git worktree list --porcelain | sed -n 's/^worktree //p' | head -1)")
-DIRNAME="${WORKTREES_DIR%/}/$BASEDIR-$BRANCH"
+git_setup
+
+WORKTREES_PATH="${WORKTREES_DIR%/}"
+if [[ "$WORKTREES_PATH" != /* ]]; then
+    WORKTREES_PATH="$PWD/$WORKTREES_PATH"
+fi
+
+BASEDIR=$(basename "$("${GIT[@]}" worktree list --porcelain | sed -n 's/^worktree //p' | head -1)")
+DIRNAME="${WORKTREES_PATH%/}/$BASEDIR-$BRANCH"
 
 if $CREATE_BRANCH; then
-    git worktree add -b "$BRANCH" "$DIRNAME"
+    "${GIT[@]}" worktree add -b "$BRANCH" "$DIRNAME"
 else
-    git worktree add "$DIRNAME" "$BRANCH"
+    "${GIT[@]}" worktree add "$DIRNAME" "$BRANCH"
 fi
 cp -r .setup.sh .env .env.local .config .agents .opencode .codex .claude .mcp.json $DIRNAME 2>/dev/null || true
 
