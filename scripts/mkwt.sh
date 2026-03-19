@@ -13,7 +13,7 @@ git_setup() {
     fi
 }
 
-default_worktrees_dir() {
+project_dir() {
     local current_dir parent_dir grandparent_dir
 
     current_dir=$(basename "$PWD")
@@ -21,13 +21,24 @@ default_worktrees_dir() {
     grandparent_dir=$(dirname "$(dirname "$PWD")")
 
     if [ "$current_dir" = "repo" ] && [ -d "$(dirname "$PWD")/worktrees" ]; then
-        printf '%s\n' "../worktrees"
+        printf '%s\n' "$(dirname "$PWD")"
     elif [ "$parent_dir" = "worktrees" ] && [ -d "$grandparent_dir/repo" ]; then
-        printf '%s\n' ".."
-    elif [ -d "$PWD/repo" ] && [ -d "$PWD/worktrees" ]; then
-        printf '%s\n' "worktrees"
+        printf '%s\n' "$grandparent_dir"
+    elif [ -d "$PWD/repo" ]; then
+        printf '%s\n' "$PWD"
     else
-        printf '%s\n' ".worktrees"
+        printf '%s\n' "$PWD"
+    fi
+}
+
+default_worktrees_dir() {
+    local proj_dir
+    proj_dir=$(project_dir)
+
+    if [ -d "$proj_dir/worktrees" ]; then
+        printf '%s\n' "$proj_dir/worktrees"
+    else
+        printf '%s\n' "$proj_dir/.worktrees"
     fi
 }
 
@@ -70,7 +81,7 @@ if $CREATE_BRANCH; then
 else
     "${GIT[@]}" worktree add "$DIRNAME" "$BRANCH"
 fi
-cp -r .setup.sh .env .env.local .config .agents .opencode .codex .claude .mcp.json $DIRNAME 2>/dev/null || true
+cpconfig.sh "$DIRNAME"
 
 cd $DIRNAME
 
