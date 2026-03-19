@@ -1,0 +1,83 @@
+#!/usr/bin/env zsh
+
+set -euo pipefail
+
+PROJ_ROOT="$PWD"
+PROJ=$(basename $PROJ_ROOT)
+
+usage() {
+    echo "usage: $0 open [branch]"
+    echo "       $0 new [-p parent] branch"
+    echo "       $0 {co|checkout} [-p parent] branch"
+    exit 1
+}
+
+CMD="${1-}"
+[[ -z "$CMD" ]] && usage
+shift
+
+case "$CMD" in
+    open)
+        BRANCH="${1-}"
+        ;;
+    new|co|checkout)
+        PARENT=""
+        while getopts "p:" opt; do
+            case $opt in
+                p) PARENT="$OPTARG" ;;
+                *) usage ;;
+            esac
+        done
+        shift $((OPTIND - 1))
+
+        BRANCH="${1-}"
+        if [[ -z "$BRANCH" ]]; then
+            echo "error: $CMD requires a branch name" >&2
+            exit 1
+        fi
+        ;;
+    *)
+        usage
+        ;;
+esac
+
+if [[ -n "$BRANCH" ]]; then
+    SESSION_NAME="$PROJ-$BRANCH"
+    REPO="$PROJ_ROOT/worktrees/$PROJ-$BRANCH"
+else
+    SESSION_NAME="$PROJ"
+    REPO="$PROJ_ROOT/repo"
+fi
+
+PROJ_ENV="$PROJ_ROOT/config/env.zsh"
+if [[ -f "$PROJ_ENV" ]]; then
+    source "$PROJ_ENV"
+fi
+
+SESSION_ENV="$PROJ_ROOT/config/$SESSION_NAME/env.zsh"
+if [[ -f "$SESSION_ENV" ]]; then
+    source "$SESSION_ENV"
+fi
+
+case "$CMD" in
+    new|co|checkout)
+        DEFAULT_BRANCH=$(git -C "$PROJ_ROOT/repo" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|refs/remotes/origin/||' || echo main)
+        PARENT="${PARENT:-$DEFAULT_BRANCH}"
+
+        if [[ "$PARENT" == "$DEFAULT_BRANCH" ]]; then
+            cd "$PROJ_ROOT/repo"
+        else
+            cd "$PROJ_ROOT/worktrees/$PROJ-$PARENT"
+        fi
+
+        if [[ "$CMD" == "new" ]]; then
+            mkwt.sh -b "$BRANCH"
+        else
+            mkwt.sh "$BRANCH"
+        fi
+        ;;
+esac
+
+cd "$REPO"
+
+tmux-4.sh "$SESSION_NAME"
