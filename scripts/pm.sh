@@ -6,9 +6,9 @@ PROJ_ROOT="$PWD"
 PROJ=$(basename $PROJ_ROOT)
 
 usage() {
-    echo "usage: $0 open [branch]"
-    echo "       $0 new [-p parent] branch"
-    echo "       $0 {co|checkout} [-p parent] branch"
+    echo "usage: $(basename "$0") open [branch]"
+    echo "       $(basename "$0") new [-p parent] branch"
+    echo "       $(basename "$0") {co|checkout} [-p parent] branch"
     exit 1
 }
 
@@ -42,7 +42,7 @@ case "$CMD" in
 esac
 
 if [[ -n "$BRANCH" ]]; then
-    SESSION_NAME="$PROJ-$BRANCH"
+    SESSION_NAME="$PROJ/$BRANCH"
     REPO="$PROJ_ROOT/worktrees/$PROJ-$BRANCH"
 else
     SESSION_NAME="$PROJ"

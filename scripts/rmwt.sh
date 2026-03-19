@@ -18,13 +18,13 @@ FORCE=false
 while getopts "f" opt; do
     case $opt in
         f) FORCE=true ;;
-        *) echo "usage: $0 [-f] <branch-name>"; exit 1 ;;
+        *) echo "usage: $(basename "$0") [-f] <branch-name>"; exit 1 ;;
     esac
 done
 shift $((OPTIND - 1))
 
 if [ $# -ne 1 ]; then
-    echo "usage: $0 [-f] <branch-name>"
+    echo "usage: $(basename "$0") [-f] <branch-name>"
     exit 1
 fi
 

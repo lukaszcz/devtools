@@ -48,19 +48,19 @@ while getopts "b:d:" opt; do
     case $opt in
         b) CREATE_BRANCH=true; BRANCH="$OPTARG" ;;
         d) WORKTREES_DIR="$OPTARG" ;;
-        *) echo "usage: $0 [-b branch-name] [-d dir] [branch-name]"; exit 1 ;;
+        *) echo "usage: $(basename "$0") [-b branch-name] [-d dir] [branch-name]"; exit 1 ;;
     esac
 done
 shift $((OPTIND - 1))
 
 if $CREATE_BRANCH; then
     if [ $# -ne 0 ]; then
-        echo "usage: $0 [-b branch-name] [-d dir] [branch-name]"
+        echo "usage: $(basename "$0") [-b branch-name] [-d dir] [branch-name]"
         exit 1
     fi
 else
     if [ $# -ne 1 ]; then
-        echo "usage: $0 [-b branch-name] [-d dir] [branch-name]"
+        echo "usage: $(basename "$0") [-b branch-name] [-d dir] [branch-name]"
         exit 1
     fi
     BRANCH="$1"

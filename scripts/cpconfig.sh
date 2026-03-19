@@ -24,17 +24,20 @@ PROJ_DIR=$(project_dir)
 while getopts "d:" opt; do
     case $opt in
         d) PROJ_DIR="$OPTARG" ;;
-        *) echo "usage: $0 [-d project-dir] dirname"; exit 1 ;;
+        *) echo "usage: $(basename "$0") [-d project-dir] dirname"; exit 1 ;;
     esac
 done
 shift $((OPTIND - 1))
 
 if [ $# -ne 1 ]; then
-    echo "usage: $0 [-d project-dir] dirname"
+    echo "usage: $(basename "$0") [-d project-dir] dirname"
     exit 1
 fi
 
 DIRNAME="$1"
+if [[ "$DIRNAME" != /* ]]; then
+    DIRNAME="$PWD/$DIRNAME"
+fi
 
 FILES=(.setup.sh .env .env.local .config .agents .opencode .codex .claude .mcp.json)
 
