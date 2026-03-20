@@ -2,8 +2,8 @@
 
 set -euo pipefail
 
-PROJ_ROOT="$PWD"
-PROJ=$(basename $PROJ_ROOT)
+export PROJ_DIR="$PWD"
+PROJ=$(basename $PROJ_DIR)
 
 usage() {
     echo "usage: $(basename "$0") open [branch]"
@@ -43,31 +43,31 @@ esac
 
 if [[ -n "$BRANCH" ]]; then
     SESSION_NAME="$PROJ/$BRANCH"
-    REPO="$PROJ_ROOT/worktrees/$PROJ-$BRANCH"
+    REPO="$PROJ_DIR/worktrees/$PROJ-$BRANCH"
 else
     SESSION_NAME="$PROJ"
-    REPO="$PROJ_ROOT/repo"
+    REPO="$PROJ_DIR/repo"
 fi
 
-PROJ_ENV="$PROJ_ROOT/config/env.zsh"
+PROJ_ENV="$PROJ_DIR/config/env.zsh"
 if [[ -f "$PROJ_ENV" ]]; then
     source "$PROJ_ENV"
 fi
 
-SESSION_ENV="$PROJ_ROOT/config/$SESSION_NAME/env.zsh"
+SESSION_ENV="$PROJ_DIR/config/$SESSION_NAME/env.zsh"
 if [[ -f "$SESSION_ENV" ]]; then
     source "$SESSION_ENV"
 fi
 
 case "$CMD" in
     new|co|checkout)
-        DEFAULT_BRANCH=$(git -C "$PROJ_ROOT/repo" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|refs/remotes/origin/||' || echo main)
-        PARENT="${PARENT:-$DEFAULT_BRANCH}"
+        REPO_BRANCH=$(git -C "$PROJ_DIR/repo" rev-parse --abbrev-ref HEAD)
+        PARENT="${PARENT:-$REPO_BRANCH}"
 
-        if [[ "$PARENT" == "$DEFAULT_BRANCH" ]]; then
-            cd "$PROJ_ROOT/repo"
+        if [[ "$PARENT" == "$REPO_BRANCH" ]]; then
+            cd "$PROJ_DIR/repo"
         else
-            cd "$PROJ_ROOT/worktrees/$PROJ-$PARENT"
+            cd "$PROJ_DIR/worktrees/$PROJ-$PARENT"
         fi
 
         if [[ "$CMD" == "new" ]]; then
