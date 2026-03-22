@@ -49,12 +49,12 @@ else
     REPO="$PROJ_DIR/repo"
 fi
 
-PROJ_ENV="$PROJ_DIR/config/env.zsh"
+PROJ_ENV="$PROJ_DIR/config/env.sh"
 if [[ -f "$PROJ_ENV" ]]; then
     source "$PROJ_ENV"
 fi
 
-SESSION_ENV="$PROJ_DIR/config/$SESSION_NAME/env.zsh"
+SESSION_ENV="$PROJ_DIR/config/$SESSION_NAME/env.sh"
 if [[ -f "$SESSION_ENV" ]]; then
     source "$SESSION_ENV"
 fi

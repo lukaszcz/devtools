@@ -8,6 +8,7 @@ Small shell utilities for local Git/GitHub workflows: worktrees, PR notes sync, 
 - `git`
 - [`just`](https://github.com/casey/just) (for installation)
 - [`gh`](https://cli.github.com/) (required by `prlog.sh` and `prsync.sh`)
+- [`srt`](https://github.com/anthropic-experimental/sandbox-runtime) (required by `sandbox.sh`)
 
 ## Install
 
@@ -16,6 +17,8 @@ Install all scripts to `prefix/bin` (default: `$HOME/.local/bin`):
 ```bash
 just install
 ```
+
+This also installs `sandbox/default.json` to `$HOME/.sandbox/default.json`.
 
 Install to a custom prefix:
 
@@ -102,3 +105,19 @@ prsync.sh
 Notes:
 - Requires a clean working tree/index before running.
 - Expects PR title format `type: subject`.
+
+### `sandbox.sh`
+
+Run a command inside [Anthropic Sandbox Runtime](https://github.com/anthropic-experimental/sandbox-runtime).
+
+```bash
+# use ~/.sandbox/default.json and/or ./.sandbox/default.json
+sandbox.sh npm test
+
+# use an explicit settings file
+sandbox.sh -f .sandbox/ci.json npm test
+```
+
+Notes:
+- If both default settings files exist, `./.sandbox/default.json` overrides `~/.sandbox/default.json` with section-aware merging.
+- If neither default settings file exists, the script exits with an error.
