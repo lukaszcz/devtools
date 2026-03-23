@@ -6,9 +6,9 @@ export PROJ_DIR="$PWD"
 PROJ=$(basename $PROJ_DIR)
 
 usage() {
-    echo "usage: $(basename "$0") open [branch]"
-    echo "       $(basename "$0") new [-p parent] branch"
-    echo "       $(basename "$0") {co|checkout} [-p parent] branch"
+    echo "usage: $(basename "$0") open [-n pane_count] [branch]"
+    echo "       $(basename "$0") new [-n pane_count] [-p parent] branch"
+    echo "       $(basename "$0") {co|checkout} [-n pane_count] [-p parent] branch"
     exit 1
 }
 
@@ -16,14 +16,25 @@ CMD="${1-}"
 [[ -z "$CMD" ]] && usage
 shift
 
+PANE_COUNT=""
+
 case "$CMD" in
     open)
+        while getopts "n:" opt; do
+            case $opt in
+                n) PANE_COUNT="$OPTARG" ;;
+                *) usage ;;
+            esac
+        done
+        shift $((OPTIND - 1))
+
         BRANCH="${1-}"
         ;;
     new|co|checkout)
         PARENT=""
-        while getopts "p:" opt; do
+        while getopts "n:p:" opt; do
             case $opt in
+                n) PANE_COUNT="$OPTARG" ;;
                 p) PARENT="$OPTARG" ;;
                 *) usage ;;
             esac
@@ -40,6 +51,11 @@ case "$CMD" in
         usage
         ;;
 esac
+
+if [[ -n "$PANE_COUNT" ]] && [[ ! "$PANE_COUNT" =~ '^[1-9][0-9]*$' ]]; then
+    echo "error: pane count must be a positive integer" >&2
+    exit 1
+fi
 
 if [[ -n "$BRANCH" ]]; then
     SESSION_NAME="$PROJ/$BRANCH"
@@ -80,4 +96,10 @@ esac
 
 cd "$REPO"
 
-tmux.sh "$SESSION_NAME"
+tmux_args=()
+
+if [[ -n "$PANE_COUNT" ]]; then
+    tmux_args+=(-n "$PANE_COUNT")
+fi
+
+tmux.sh "${tmux_args[@]}" "$SESSION_NAME"
