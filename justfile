@@ -21,12 +21,14 @@ install p=prefix s=symlink:
         echo "Installed $dst"; \
       fi; \
     done; \
-    sandbox_src="{{justfile_directory()}}/sandbox/default.json"; \
-    sandbox_dst="$sandbox_dir/default.json"; \
-    if [ "{{s}}" = "1" ] || [ "{{s}}" = "true" ] || [ "{{s}}" = "yes" ]; then \
-      ln -sfn "$sandbox_src" "$sandbox_dst"; \
-      echo "Symlinked $sandbox_dst -> $sandbox_src"; \
-    else \
-      install -m 0644 "$sandbox_src" "$sandbox_dst"; \
-      echo "Installed $sandbox_dst"; \
-    fi
+    for sandbox_src in "{{justfile_directory()}}"/sandbox/*; do \
+      [ -f "$sandbox_src" ] || continue; \
+      sandbox_dst="$sandbox_dir/$(basename "$sandbox_src")"; \
+      if [ "{{s}}" = "1" ] || [ "{{s}}" = "true" ] || [ "{{s}}" = "yes" ]; then \
+        ln -sfn "$sandbox_src" "$sandbox_dst"; \
+        echo "Symlinked $sandbox_dst -> $sandbox_src"; \
+      else \
+        install -m 0644 "$sandbox_src" "$sandbox_dst"; \
+        echo "Installed $sandbox_dst"; \
+      fi; \
+    done

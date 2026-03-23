@@ -18,7 +18,7 @@ Install all scripts to `prefix/bin` (default: `$HOME/.local/bin`):
 just install
 ```
 
-This also installs `sandbox/default.json` to `$HOME/.sandbox/default.json`.
+This also installs all files from `sandbox/` to `$HOME/.sandbox/`.
 
 Install to a custom prefix:
 
