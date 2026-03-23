@@ -59,7 +59,7 @@ fi
 
 if [[ -n "$BRANCH" ]]; then
     SESSION_NAME="$PROJ/$BRANCH"
-    REPO="$PROJ_DIR/worktrees/$PROJ-$BRANCH"
+    REPO="$PROJ_DIR/worktrees/$BRANCH"
 else
     SESSION_NAME="$PROJ"
     REPO="$PROJ_DIR/repo"
@@ -70,7 +70,7 @@ if [[ -f "$PROJ_ENV" ]]; then
     source "$PROJ_ENV"
 fi
 
-SESSION_ENV="$PROJ_DIR/config/$SESSION_NAME/env.sh"
+SESSION_ENV="$PROJ_DIR/config/$BRANCH/env.sh"
 if [[ -f "$SESSION_ENV" ]]; then
     source "$SESSION_ENV"
 fi
@@ -83,7 +83,7 @@ case "$CMD" in
         if [[ "$PARENT" == "$REPO_BRANCH" ]]; then
             cd "$PROJ_DIR/repo"
         else
-            cd "$PROJ_DIR/worktrees/$PROJ-$PARENT"
+            cd "$PROJ_DIR/worktrees/$PARENT"
         fi
 
         if [[ "$CMD" == "new" ]]; then
