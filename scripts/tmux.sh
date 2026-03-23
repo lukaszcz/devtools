@@ -71,6 +71,8 @@ local -a skip_prefixes=(
 local -a tmux_env_args
 local line name value prefix
 local skip
+local apply_layout_command
+local -i pane_index
 
 while IFS= read -r line; do
   name=${line%%=*}
@@ -96,6 +98,8 @@ while IFS= read -r line; do
   tmux_env_args+=(-e "$name=$value")
 done < <(env)
 
+apply_layout_command="tmux-apply-layout.sh $pane_count '#{window_id}' '#{window_width}' '#{window_height}'"
+
 tmux_args=(
   new-session
   "${session_args[@]}"
@@ -105,13 +109,13 @@ tmux_args=(
 for (( pane_index = 1; pane_index < pane_count; pane_index++ )); do
   tmux_args+=(
     ';'
-    split-window -h
+    split-window -d -h
   )
 done
 
 tmux_args+=(
   ';'
-  select-layout tiled
+  run-shell "$apply_layout_command"
   ';'
   select-pane -t 0
 )
