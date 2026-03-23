@@ -74,7 +74,7 @@ if [[ "$WORKTREES_PATH" != /* ]]; then
 fi
 
 BASEDIR=$(basename "$("${GIT[@]}" worktree list --porcelain | sed -n 's/^worktree //p' | head -1)")
-DIRNAME="${WORKTREES_PATH%/}/$BASEDIR-$BRANCH"
+DIRNAME="${WORKTREES_PATH%/}/$BRANCH"
 
 if $CREATE_BRANCH; then
     "${GIT[@]}" worktree add -b "$BRANCH" "$DIRNAME"
