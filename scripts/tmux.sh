@@ -69,10 +69,19 @@ local -a skip_prefixes=(
 )
 
 local -a tmux_env_args
+local -a tmux_command
 local line name value prefix
 local skip
 local apply_layout_command
+local tmux_exec_command
 local -i pane_index
+local -i should_detach
+
+should_detach=0
+
+if [[ -n "${TMUX:-}" ]]; then
+  should_detach=1
+fi
 
 while IFS= read -r line; do
   name=${line%%=*}
@@ -120,4 +129,12 @@ tmux_args+=(
   select-pane -t 0
 )
 
-tmux "${tmux_args[@]}"
+tmux_command=(tmux "${tmux_args[@]}")
+tmux_exec_command="${(j: :)${(q)tmux_command[@]}}"
+
+if (( should_detach )); then
+  tmux detach-client -E "$tmux_exec_command"
+  exit $?
+fi
+
+"${tmux_command[@]}"
