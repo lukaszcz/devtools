@@ -80,4 +80,4 @@ esac
 
 cd "$REPO"
 
-tmux-4.sh "$SESSION_NAME"
+tmux.sh "$SESSION_NAME"
