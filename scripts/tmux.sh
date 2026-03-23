@@ -111,6 +111,7 @@ apply_layout_command="tmux-apply-layout.sh $pane_count '#{window_id}' '#{window_
 
 tmux_args=(
   new-session
+  -c "$PWD"
   "${session_args[@]}"
   "${tmux_env_args[@]}"
 )
@@ -118,7 +119,7 @@ tmux_args=(
 for (( pane_index = 1; pane_index < pane_count; pane_index++ )); do
   tmux_args+=(
     ';'
-    split-window -d -h
+    split-window -d -h -c "$PWD"
   )
 done
 
