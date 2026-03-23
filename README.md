@@ -55,6 +55,24 @@ mkwt.sh -b feature/new-branch
 mkwt.sh -d .worktrees feature/my-branch
 ```
 
+### `pm-dep.sh`
+
+Manage dependency checkouts under `deps/DEP/BRANCH`.
+
+```bash
+# clone a new dependency into deps/repo-name/main
+pm-dep.sh new https://github.com/org/repo-name.git
+
+# clone a specific branch into deps/repo-name/feature/foo
+pm-dep.sh new -b feature/foo https://github.com/org/repo-name.git
+
+# add a worktree for an existing branch
+pm-dep.sh add feature/foo repo-name
+
+# create a new branch worktree from the dependency's default branch
+pm-dep.sh add -b feature/bar repo-name
+```
+
 ### `rmwt.sh`
 
 Remove a worktree by branch name, then delete the branch locally.

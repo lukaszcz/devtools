@@ -3,7 +3,7 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 default_prefix := env_var_or_default("HOME", "") + "/.local"
 prefix := default_prefix
 symlink := "false"
-scripts := "brsync.sh cpconfig.sh git-rm-branches.sh mkwt.sh pm-init.sh prlog.sh prsync.sh rmwt.sh tmux.sh tmux-apply-layout.sh pm.sh sandbox.sh"
+scripts := "brsync.sh cpconfig.sh git-rm-branches.sh mkwt.sh pm-dep.sh pm-init.sh prlog.sh prsync.sh rmwt.sh tmux.sh tmux-apply-layout.sh pm.sh sandbox.sh"
 
 install p=prefix s=symlink:
     @bin_dir="{{p}}/bin"; \
