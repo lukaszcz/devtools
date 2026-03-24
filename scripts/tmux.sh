@@ -39,11 +39,7 @@ if (( $# > 1 )); then
   exit 1
 fi
 
-session_args=()
-
-if [[ -n "${1:-}" ]]; then
-  session_args=(-s "$1")
-fi
+session_name="${1:-}"
 
 # Exact variable names to skip.
 local -a skip_names=(
@@ -70,10 +66,15 @@ local -a skip_prefixes=(
 
 local -a tmux_env_args
 local -a tmux_command
+local -a session_name_args
 local line name value prefix
 local skip
 local apply_layout_command
-local tmux_exec_command
+local script_dir
+local target_session
+local window_id
+local window_width
+local window_height
 local -i pane_index
 local -i should_detach
 
@@ -107,14 +108,19 @@ while IFS= read -r line; do
   tmux_env_args+=(-e "$name=$value")
 done < <(env)
 
-apply_layout_command="tmux-apply-layout.sh $pane_count '#{window_id}' '#{window_width}' '#{window_height}'"
+script_dir=${0:A:h}
+apply_layout_command="$script_dir/tmux-apply-layout.sh $pane_count '#{window_id}' '#{window_width}' '#{window_height}'"
 
 tmux_args=(
   new-session
   -c "$PWD"
-  "${session_args[@]}"
   "${tmux_env_args[@]}"
 )
+
+if [[ -n "$session_name" ]]; then
+  session_name_args=(-s "$session_name")
+  tmux_args+=("${session_name_args[@]}")
+fi
 
 for (( pane_index = 1; pane_index < pane_count; pane_index++ )); do
   tmux_args+=(
@@ -130,12 +136,21 @@ tmux_args+=(
   select-pane -t 0
 )
 
-tmux_command=(tmux "${tmux_args[@]}")
-tmux_exec_command="${(j: :)${(q)tmux_command[@]}}"
-
 if (( should_detach )); then
-  tmux detach-client -E "$tmux_exec_command"
+  target_session=$(tmux new-session -dP -F '#{session_name}' -c "$PWD" "${tmux_env_args[@]}" "${session_name_args[@]}")
+
+  for (( pane_index = 1; pane_index < pane_count; pane_index++ )); do
+    tmux split-window -d -h -t "${target_session}:0" -c "$PWD"
+  done
+
+  window_id=$(tmux display-message -p -t "${target_session}:0" '#{window_id}')
+  window_width=$(tmux display-message -p -t "${target_session}:0" '#{window_width}')
+  window_height=$(tmux display-message -p -t "${target_session}:0" '#{window_height}')
+  "$script_dir/tmux-apply-layout.sh" "$pane_count" "$window_id" "$window_width" "$window_height"
+  tmux select-pane -t "${target_session}:0.0"
+  tmux switch-client -t "$target_session"
   exit $?
 fi
 
+tmux_command=(tmux "${tmux_args[@]}")
 "${tmux_command[@]}"

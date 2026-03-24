@@ -85,10 +85,6 @@ cpconfig.sh "$DIRNAME"
 
 cd $DIRNAME
 
-if [ -n "${PROJ_DIR:-}" ] && [ -x "$PROJ_DIR/config/setup.sh" ]; then
-    "$PROJ_DIR/config/setup.sh"
-fi
-
 if [ -f .config/setup.sh ] && [ -x .config/setup.sh ]; then
     ./.config/setup.sh
 fi

@@ -12,11 +12,19 @@ usage() {
     exit 1
 }
 
+source_env_file() {
+    local env_file="$1"
+
+    [[ -f "$env_file" ]] || return 0
+    source "$env_file"
+}
+
 CMD="${1-}"
 [[ -z "$CMD" ]] && usage
 shift
 
 PANE_COUNT=""
+RUN_PROJECT_SETUP=false
 
 case "$CMD" in
     open)
@@ -65,16 +73,6 @@ else
     REPO="$PROJ_DIR/repo"
 fi
 
-PROJ_ENV="$PROJ_DIR/config/env.sh"
-if [[ -f "$PROJ_ENV" ]]; then
-    source "$PROJ_ENV"
-fi
-
-SESSION_ENV="$PROJ_DIR/config/$BRANCH/env.sh"
-if [[ -f "$SESSION_ENV" ]]; then
-    source "$SESSION_ENV"
-fi
-
 case "$CMD" in
     new|co|checkout)
         REPO_BRANCH=$(git -C "$PROJ_DIR/repo" rev-parse --abbrev-ref HEAD)
@@ -91,10 +89,21 @@ case "$CMD" in
         else
             mkwt.sh "$BRANCH"
         fi
+        RUN_PROJECT_SETUP=true
         ;;
 esac
 
 cd "$REPO"
+
+PROJ_ENV="$PROJ_DIR/config/env.sh"
+source_env_file "$PROJ_ENV"
+
+SESSION_ENV="$PROJ_DIR/config/$BRANCH/env.sh"
+source_env_file "$SESSION_ENV"
+
+if [[ "$RUN_PROJECT_SETUP" == true ]] && [[ -x "$PROJ_DIR/config/setup.sh" ]]; then
+    "$PROJ_DIR/config/setup.sh"
+fi
 
 tmux_args=()
 
