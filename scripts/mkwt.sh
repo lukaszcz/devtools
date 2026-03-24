@@ -13,6 +13,10 @@ git_setup() {
     fi
 }
 
+fetch_refs() {
+    "${GIT[@]}" fetch
+}
+
 project_dir() {
     local current_dir parent_dir grandparent_dir
 
@@ -67,6 +71,7 @@ else
 fi
 
 git_setup
+fetch_refs
 
 WORKTREES_PATH="${WORKTREES_DIR%/}"
 if [[ "$WORKTREES_PATH" != /* ]]; then
@@ -84,6 +89,12 @@ fi
 cpconfig.sh "$DIRNAME"
 
 cd $DIRNAME
+
+PROJ_DIR=$(project_dir)
+
+if [[ -x "$PROJ_DIR/config/setup.sh" ]]; then
+    "$PROJ_DIR/config/setup.sh"
+fi
 
 if [ -f .config/setup.sh ] && [ -x .config/setup.sh ]; then
     ./.config/setup.sh

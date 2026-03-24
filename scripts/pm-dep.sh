@@ -76,6 +76,12 @@ first_dep_repo() {
     exit 1
 }
 
+fetch_dep_refs() {
+    local repo_path=$1
+
+    git -C "$repo_path" fetch
+}
+
 cmd_new() {
     local branch=""
     local repo_url dep dep_dir target_dir
@@ -149,6 +155,7 @@ cmd_add() {
     fi
 
     mkdir -p "$(dirname "$target_dir")"
+    fetch_dep_refs "$repo_path"
 
     if $create_branch; then
         default_branch=$(default_branch_from_repo "$repo_path")
