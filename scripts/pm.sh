@@ -108,4 +108,8 @@ if [[ -n "$PANE_COUNT" ]]; then
     tmux_args+=(-n "$PANE_COUNT")
 fi
 
+if [[ "$CMD" == "new" ]]; then
+    tmux_args+=(-d)
+fi
+
 tmux.sh "${tmux_args[@]}" "$SESSION_NAME"
