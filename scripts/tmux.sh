@@ -3,30 +3,42 @@
 emulate -L zsh
 setopt extendedglob
 
+script_name=${ZSH_ARGZERO:t}
+
 usage() {
-  print -u2 "Usage: ${0:t} [-n pane_count] [session_name]"
+  local -i fd=${1:-1}
+  print -u$fd "Usage: $script_name [-h|--help] [-n pane_count] [session_name]"
 }
 
 pane_count=4
 
-while getopts ":n:" opt; do
+if (( ${argv[(I)--help]} )); then
+  usage
+  exit 0
+fi
+
+while getopts ":hn:" opt; do
   case "$opt" in
+    h)
+      usage
+      exit 0
+      ;;
     n)
       if [[ $OPTARG != <-> ]] || (( OPTARG < 1 )); then
         print -u2 "Invalid pane count: $OPTARG"
-        usage
+        usage 2
         exit 1
       fi
       pane_count=$OPTARG
       ;;
     :)
       print -u2 "Option -$OPTARG requires an argument"
-      usage
+      usage 2
       exit 1
       ;;
     \?)
       print -u2 "Unknown option: -$OPTARG"
-      usage
+      usage 2
       exit 1
       ;;
   esac
@@ -35,7 +47,7 @@ done
 shift $((OPTIND - 1))
 
 if (( $# > 1 )); then
-  usage
+  usage 2
   exit 1
 fi
 
