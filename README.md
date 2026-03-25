@@ -73,6 +73,14 @@ pm-dep.sh add feature/foo repo-name
 pm-dep.sh add -b feature/bar repo-name
 ```
 
+### `pm-fetch.sh`
+
+Fetch `repo/` and one checked out worktree for each dependency under `deps/DEP/`.
+
+```bash
+pm-fetch.sh
+```
+
 ### `rmwt.sh`
 
 Remove a worktree by branch name, then delete the branch locally.
