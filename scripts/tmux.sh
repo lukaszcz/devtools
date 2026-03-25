@@ -7,21 +7,30 @@ script_name=${ZSH_ARGZERO:t}
 
 usage() {
   local -i fd=${1:-1}
-  print -u$fd "Usage: $script_name [-h|--help] [-n pane_count] [session_name]"
+  print -u$fd "Usage: $script_name [-h|--help] [-d|--detach] [-n pane_count] [session_name]"
 }
 
 pane_count=4
+detach_requested=0
 
 if (( ${argv[(I)--help]} )); then
   usage
   exit 0
 fi
 
-while getopts ":hn:" opt; do
+if (( ${argv[(I)--detach]} )); then
+  detach_requested=1
+  argv=("${(@)argv:#--detach}")
+fi
+
+while getopts ":hdn:" opt; do
   case "$opt" in
     h)
       usage
       exit 0
+      ;;
+    d)
+      detach_requested=1
       ;;
     n)
       if [[ $OPTARG != <-> ]] || (( OPTARG < 1 )); then
@@ -88,12 +97,15 @@ local window_id
 local window_width
 local window_height
 local -i pane_index
-local -i should_detach
+local -i create_detached_session
+local -i switch_to_session
 
-should_detach=0
+create_detached_session=detach_requested
+switch_to_session=0
 
-if [[ -n "${TMUX:-}" ]]; then
-  should_detach=1
+if [[ -n "${TMUX:-}" ]] && (( ! detach_requested )); then
+  create_detached_session=1
+  switch_to_session=1
 fi
 
 while IFS= read -r line; do
@@ -148,7 +160,7 @@ tmux_args+=(
   select-pane -t 0
 )
 
-if (( should_detach )); then
+if (( create_detached_session )); then
   target_session=$(tmux new-session -dP -F '#{session_name}' -c "$PWD" "${tmux_env_args[@]}" "${session_name_args[@]}")
 
   for (( pane_index = 1; pane_index < pane_count; pane_index++ )); do
@@ -160,8 +172,12 @@ if (( should_detach )); then
   window_height=$(tmux display-message -p -t "${target_session}:0" '#{window_height}')
   "$script_dir/tmux-apply-layout.sh" "$pane_count" "$window_id" "$window_width" "$window_height"
   tmux select-pane -t "${target_session}:0.0"
-  tmux switch-client -t "$target_session"
-  exit $?
+  if (( switch_to_session )); then
+    tmux switch-client -t "$target_session"
+    exit $?
+  fi
+  print "Detached tmux session $target_session created"
+  exit 0
 fi
 
 tmux_command=(tmux "${tmux_args[@]}")
