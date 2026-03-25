@@ -142,8 +142,13 @@ sandbox.sh npm test
 
 # use an explicit settings file
 sandbox.sh -f .sandbox/ci.json npm test
+
+# disable the temporary PROJ_DIR-based patching
+sandbox.sh --no-patch npm test
 ```
 
 Notes:
 - If both default settings files exist, `./.sandbox/default.json` overrides `~/.sandbox/default.json` with section-aware merging.
 - If neither default settings file exists, the script exits with an error.
+- If `PROJ_DIR` is set, the selected settings file is patched temporarily to add `$PROJ_DIR/notes` and `$PROJ_DIR/issues` to `filesystem.allowWrite`.
+- Use `--no-patch` to disable the temporary patching.
