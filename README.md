@@ -67,10 +67,10 @@ pm-dep.sh new https://github.com/org/repo-name.git
 pm-dep.sh new -b feature/foo https://github.com/org/repo-name.git
 
 # add a worktree for an existing branch
-pm-dep.sh add feature/foo repo-name
+pm-dep.sh switch repo-name feature/foo
 
 # create a new branch worktree from the dependency's default branch
-pm-dep.sh add -b feature/bar repo-name
+pm-dep.sh switch repo-name -b feature/bar
 ```
 
 ### `pm-fetch.sh`

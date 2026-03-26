@@ -6,7 +6,7 @@ PROJECT_DIR=$PWD
 
 usage() {
     echo "usage: $(basename "$0") new [-b branch] repo-url" >&2
-    echo "       $(basename "$0") add [-b] branch dep" >&2
+    echo "       $(basename "$0") switch dep [-b] branch" >&2
     exit 1
 }
 
@@ -120,25 +120,20 @@ cmd_new() {
     fi
 }
 
-cmd_add() {
+cmd_switch() {
     local create_branch=false
     local branch dep dep_dir repo_path target_dir default_branch
 
-    OPTIND=1
-    while getopts ":b" opt; do
-        case "$opt" in
-            b) create_branch=true ;;
-            *) usage ;;
-        esac
-    done
-    shift $((OPTIND - 1))
-
-    if [[ $# -ne 2 ]]; then
+    if [[ $# -eq 2 ]]; then
+        dep=$1
+        branch=$2
+    elif [[ $# -eq 3 && "$2" == "-b" ]]; then
+        dep=$1
+        create_branch=true
+        branch=$3
+    else
         usage
     fi
-
-    branch=$1
-    dep=$2
     dep_dir="$PROJECT_DIR/deps/$dep"
 
     if [[ ! -d "$dep_dir" ]]; then
@@ -173,6 +168,6 @@ shift
 
 case "$cmd" in
     new) cmd_new "$@" ;;
-    add) cmd_add "$@" ;;
+    switch) cmd_switch "$@" ;;
     *) usage ;;
 esac
