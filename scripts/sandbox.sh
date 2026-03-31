@@ -209,4 +209,4 @@ if [[ $PATCH_SETTINGS -eq 1 && -n "${PROJ_DIR:-}" ]]; then
   patch_settings_for_proj_dir "$SETTINGS_FILE"
 fi
 
-exec srt --settings "$SETTINGS_FILE" "$@"
+exec srt --settings "$SETTINGS_FILE" -- "$@"

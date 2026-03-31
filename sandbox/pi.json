@@ -4,6 +4,7 @@
       "calude.ai",
       "platform.claude.com",
       "api.anthropic.com",
+      "openrouter.ai",
       "github.com",
       "*.github.com",
       "api.github.com",
