@@ -25,6 +25,7 @@ EOF
 SETTINGS_FILE=""
 PATCH_SETTINGS=1
 TEMP_SETTINGS_FILES=()
+TRACKED_BWRAP_ARTIFACTS=()
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -76,15 +77,115 @@ cleanup() {
   for temp_file in "${TEMP_SETTINGS_FILES[@]}"; do
     [[ -f "$temp_file" ]] && rm -f "$temp_file"
   done
+
+  for artifact in "${TRACKED_BWRAP_ARTIFACTS[@]}"; do
+    if [[ -f "$artifact" && ! -s "$artifact" ]]; then
+      rm -f "$artifact"
+    elif [[ -d "$artifact" ]]; then
+      rmdir "$artifact" 2>/dev/null || true
+    fi
+  done
 }
 
 trap cleanup EXIT
 
 require_python3() {
   if ! command -v python3 >/dev/null 2>&1; then
-    echo "Error: python3 is required to process sandbox settings files." >&2
+    echo "Error: python3 >= 3.12 is required to process sandbox settings files." >&2
     exit 1
   fi
+
+  if ! python3 -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 12) else 1)'; then
+    echo "Error: python3 >= 3.12 is required to process sandbox settings files." >&2
+    exit 1
+  fi
+}
+
+track_bwrap_artifacts() {
+  require_python3
+
+  mapfile -t TRACKED_BWRAP_ARTIFACTS < <(
+    python3 - "$SETTINGS_FILE" "$PWD" <<'PY'
+import json
+import os
+import sys
+
+settings_path, cwd = sys.argv[1:]
+
+with open(settings_path, "r", encoding="utf-8") as f:
+    data = json.load(f)
+
+mandatory_deny_paths = [
+    ".gitconfig",
+    ".gitmodules",
+    ".bashrc",
+    ".bash_profile",
+    ".zshrc",
+    ".zprofile",
+    ".profile",
+    ".ripgreprc",
+    ".mcp.json",
+    ".vscode",
+    ".idea",
+    ".claude/commands",
+    ".claude/agents",
+]
+
+git_dir = os.path.join(cwd, ".git")
+if os.path.isdir(git_dir):
+    mandatory_deny_paths.extend([".git/hooks", ".git/config"])
+
+filesystem = data.get("filesystem")
+deny_write = []
+if isinstance(filesystem, dict):
+    raw_deny_write = filesystem.get("denyWrite")
+    if isinstance(raw_deny_write, list):
+        deny_write = [
+            entry
+            for entry in raw_deny_write
+            if isinstance(entry, str) and not any(ch in entry for ch in "*?[]")
+        ]
+
+def normalize(path_pattern: str) -> str:
+    if path_pattern == "~":
+        normalized = os.path.expanduser("~")
+    elif path_pattern.startswith("~/"):
+        normalized = os.path.expanduser(path_pattern)
+    elif os.path.isabs(path_pattern):
+        normalized = path_pattern
+    else:
+        normalized = os.path.join(cwd, path_pattern)
+
+    normalized = os.path.abspath(normalized)
+    if os.path.exists(normalized):
+        try:
+            normalized = os.path.realpath(normalized)
+        except OSError:
+            pass
+    return normalized
+
+def first_missing_component(target: str) -> str | None:
+    relpath = os.path.relpath(target, cwd)
+    if relpath == "." or relpath.startswith(".."):
+        return None
+
+    current = cwd
+    for part in relpath.split(os.sep):
+        current = os.path.join(current, part)
+        if not os.path.exists(current):
+            return current
+    return None
+
+seen = set()
+for candidate in mandatory_deny_paths + deny_write:
+    normalized = normalize(candidate)
+    missing = first_missing_component(normalized)
+    if missing is None or missing in seen:
+        continue
+    seen.add(missing)
+    print(missing)
+PY
+  )
 }
 
 merge_settings_files() {
@@ -209,4 +310,11 @@ if [[ $PATCH_SETTINGS -eq 1 && -n "${PROJ_DIR:-}" ]]; then
   patch_settings_for_proj_dir "$SETTINGS_FILE"
 fi
 
-exec srt --settings "$SETTINGS_FILE" -- "$@"
+track_bwrap_artifacts
+
+set +e
+srt --settings "$SETTINGS_FILE" -- "$@"
+status=$?
+set -e
+
+exit "$status"
