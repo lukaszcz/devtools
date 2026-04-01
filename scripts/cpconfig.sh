@@ -39,7 +39,7 @@ if [[ "$DIRNAME" != /* ]]; then
     DIRNAME="$PWD/$DIRNAME"
 fi
 
-FILES=(.setup.sh .env .env.local .config .agents .opencode .codex .claude .mcp.json)
+FILES=(.setup.sh .env .env.local .config .agents .opencode .codex .claude .pi .mcp.json)
 
 cp -r "${FILES[@]}" "$DIRNAME" 2>/dev/null || true
 
