@@ -17,7 +17,7 @@ If both files exist, the project-local file overrides the home file with
 section-aware merging.
 
 If `PROJ_DIR` is set, the selected settings file is patched temporarily to add
-`$PROJ_DIR/notes` and `$PROJ_DIR/issues` to `filesystem.allowWrite`.
+`$PROJ_DIR` to `filesystem.allowWrite`.
 Use `--no-patch` to disable that behavior.
 EOF
 }
@@ -269,9 +269,8 @@ if not isinstance(allow_write, list):
     allow_write = []
     filesystem["allowWrite"] = allow_write
 
-for path in (os.path.join(proj_dir, "notes"), os.path.join(proj_dir, "issues")):
-    if path not in allow_write:
-        allow_write.append(path)
+if proj_dir not in allow_write:
+    allow_write.append(proj_dir)
 
 with open(out_path, "w", encoding="utf-8") as f:
     json.dump(data, f)
